@@ -1,26 +1,84 @@
 @import "tailwindcss";
 
+@theme {
+  /* Identidade CK: preto profundo + dourado da logo */
+  --color-preto: #000000;
+  --color-carvao: #0a0a0a;
+  --color-grafite: #141414;
+  --color-fumaca: #1e1e1e;
+
+  --color-ouro: #d4a24c;
+  --color-ouro-claro: #f0d08a;
+  --color-ouro-escuro: #a8763a;
+
+  --color-creme: #f5f1e8;
+  --color-cinza: #9a9289;
+
+  --font-display: var(--fonte-display), Georgia, "Times New Roman", serif;
+  --font-sans: var(--fonte-corpo), system-ui, -apple-system, sans-serif;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: dark;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-preto);
+  color: var(--color-creme);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Texto/filete em gradiente dourado, como na logo */
+.texto-ouro {
+  background: linear-gradient(135deg, #a8763a 0%, #f0d08a 45%, #d4a24c 70%, #8a5f2c 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.borda-ouro {
+  border-image: linear-gradient(135deg, #a8763a, #f0d08a, #a8763a) 1;
+}
+
+.filete-ouro {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #d4a24c 20%, #f0d08a 50%, #d4a24c 80%, transparent);
+}
+
+/* Esconde a barra de rolagem mantendo o scroll (carrosséis) */
+.sem-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.sem-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@keyframes surgir {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.surgir {
+  animation: surgir 0.5s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .surgir {
+    animation: none;
+  }
 }

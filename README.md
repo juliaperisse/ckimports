@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CK Importadora
 
-## Getting Started
+Loja de tênis importados — catálogo, carrinho, checkout com Mercado Pago e
+atendimento por WhatsApp.
 
-First, run the development server:
+Next.js 16 (App Router) · TypeScript · Tailwind CSS 4
+
+## Rodando localmente
 
 ```bash
+npm install
+cp .env.example .env.local   # preencha as chaves
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abra http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Variáveis de ambiente
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Veja `.env.example`. As essenciais:
 
-## Learn More
+| Variável | Para quê |
+| --- | --- |
+| `NEXT_PUBLIC_SITE_URL` | URL pública do site |
+| `MERCADO_PAGO_ACCESS_TOKEN` | Criar o pagamento (Checkout Pro) |
+| `MERCADO_PAGO_WEBHOOK_SECRET` | Validar o webhook de venda |
+| `RESEND_API_KEY` | Enviar o e-mail de aviso de venda |
+| `EMAIL_VENDAS` | Para onde vai o aviso de venda |
 
-To learn more about Next.js, take a look at the following resources:
+Sem `MERCADO_PAGO_ACCESS_TOKEN` o site funciona normalmente, mas o checkout
+online responde pedindo para o cliente finalizar pelo WhatsApp.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Estrutura
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+data/produtos.json        catálogo (312 produtos)
+public/produtos/<slug>/   fotos de cada produto
+scripts/                  extração e normalização do catálogo
+src/lib/config.ts         WhatsApp, prazos e dados da loja
+src/lib/catalogo.ts       leitura e agrupamento do catálogo
+src/lib/pedido.ts         validação do carrinho no servidor
+src/lib/mercadopago.ts    API do Mercado Pago
+src/app/api/checkout      cria o pagamento
+src/app/api/webhooks      recebe a confirmação e dispara o e-mail
+```
 
-## Deploy on Vercel
+## Atualizando o catálogo
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+python3 scripts/scrape.py             # relê os produtos na origem
+python3 scripts/mapear-categorias.py  # marca/coleção de cada produto
+python3 scripts/normalizar.py         # consolida o catálogo final
+python3 scripts/baixar-imagens.py     # baixa as fotos novas
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Os preços ficam em `data/produtos.json`, no campo `price`.
+
+## Segurança do checkout
+
+- Os preços **nunca** vêm do navegador: o servidor relê cada item do catálogo
+  antes de criar o pagamento (`src/lib/pedido.ts`).
+- Nenhum dado de cartão passa pelo site — o cliente paga dentro do ambiente do
+  Mercado Pago.
+- O webhook confere a assinatura HMAC do Mercado Pago e reconsulta o pagamento
+  na API antes de considerar a venda aprovada.
